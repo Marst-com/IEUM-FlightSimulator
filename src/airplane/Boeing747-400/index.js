@@ -3,6 +3,7 @@ import * as THREE from "three";
 
 import { AIRCRAFT_CONFIG } from "./config.js";
 
+import { createExteriorDetails } from "./exteriorDetails.js";
 import { createFuselage } from "./fuselage.js";
 import { createWings } from "./wings.js";
 import { createEngines } from "./engines.js";
@@ -34,6 +35,10 @@ export class Boeing747_400 extends THREE.Group {
         createTail(this.model);
 
         createLandingGear(this.model);
+
+        createFuselage(this.model, this.materials);
+        
+        createExteriorDetails(this.model, this.materials);
     }
 
     update(delta) {
