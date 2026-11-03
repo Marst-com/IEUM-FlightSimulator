@@ -5,97 +5,126 @@ import { Renderer } from "./core/Renderer.js";
 import { SceneManager } from "./core/SceneManager.js";
 import { CameraManager } from "./core/CameraManager.js";
 
-import { Boeing747_400 } from
-    "./airplane/Boeing747-400/index.js";
+import Boeing747_400 from "./airplane/Boeing747-400/index.js";
 
-import { Environment } from "./environment/Environment.js";
+import "./styles/main.css";
 
-/* =========================================================
-   INITIALIZATION
-========================================================= */
+class FlightSimulator {
+  constructor() {
+    this.renderer = null;
+    this.sceneManager = null;
+    this.cameraManager = null;
+    this.aircraft = null;
 
-const container = document.getElementById("game");
+    this.canvas = document.querySelector("#flight-canvas");
+    this.loading = document.querySelector("#loading-screen");
 
-const renderer = new Renderer(container);
+    this.clock = new THREE.Clock();
+    this.initialized = false;
+  }
 
-const sceneManager = new SceneManager();
+  async init() {
+    try {
+      console.log("[IEUM] Initializing renderer...");
 
-const cameraManager = new CameraManager(
-    renderer.instance
-);
+      this.renderer = new Renderer(this.canvas);
 
-const scene = sceneManager.scene;
+      console.log("[IEUM] Initializing scene...");
 
-/* =========================================================
-   AIRCRAFT
-========================================================= */
+      this.sceneManager = new SceneManager();
 
-const aircraft = new Boeing747_400();
+      console.log("[IEUM] Initializing camera...");
 
-scene.add(aircraft);
+      this.cameraManager = new CameraManager(
+        this.renderer.renderer.domElement
+      );
 
-/* =========================================================
-   ENVIRONMENT
-========================================================= */
+      console.log("[IEUM] Creating aircraft...");
 
-const environment = new Environment(scene);
+      this.aircraft = new Boeing747_400();
 
-/* =========================================================
-   RENDER LOOP
-========================================================= */
+      this.sceneManager.scene.add(this.aircraft);
 
-const clock = new THREE.Clock();
+      console.log("[IEUM] Aircraft created:", this.aircraft);
 
-function animate() {
-    requestAnimationFrame(animate);
+      this.aircraft.position.set(0, 0, 0);
 
-    const delta = clock.getDelta();
+      this.cameraManager.camera.position.set(95, 45, -105);
+      this.cameraManager.camera.lookAt(0, 0, 0);
 
-    cameraManager.update(delta);
+      this.renderer.resize();
+      this.cameraManager.resize();
 
-    aircraft.update?.(delta);
+      window.addEventListener("resize", () => {
+        this.renderer.resize();
+        this.cameraManager.resize();
+      });
 
-    environment.update?.(delta);
+      this.initialized = true;
 
-    renderer.render(
-        scene,
-        cameraManager.camera
-    );
-}
+      this.hideLoading();
 
-animate();
+      console.log("[IEUM] Flight Simulator Ready");
 
-/* =========================================================
-   RESIZE
-========================================================= */
+      this.animate();
 
-window.addEventListener("resize", () => {
-    renderer.resize();
+    } catch (error) {
+      console.error("[IEUM] Initialization failed:", error);
+      this.showError(error);
+    }
+  }
 
-    cameraManager.resize();
-});
+  hideLoading() {
+    if (!this.loading) return;
 
-/* =========================================================
-   LOADING
-========================================================= */
-
-window.addEventListener("load", () => {
-    const loading = document.getElementById("loading");
-
-    loading.style.opacity = "0";
+    this.loading.style.opacity = "0";
 
     setTimeout(() => {
-        loading.remove();
-    }, 800);
-});
+      this.loading.style.display = "none";
+    }, 500);
+  }
 
-/* =========================================================
-   DEBUG
-========================================================= */
+  showError(error) {
+    if (!this.loading) return;
 
-window.IEUM = {
-    scene,
-    camera: cameraManager.camera,
-    aircraft,
-    renderer: renderer.instance
-};
+    this.loading.innerHTML = `
+      <div style="
+        color: white;
+        font-family: monospace;
+        text-align: center;
+        padding: 30px;
+      ">
+        <h2>INITIALIZATION FAILED</h2>
+        <p style="color:#ff7777">
+          ${String(error.message || error)}
+        </p>
+        <p style="color:#999">
+          Check browser console for details.
+        </p>
+      </div>
+    `;
+  }
+
+  animate() {
+    requestAnimationFrame(() => this.animate());
+
+    if (!this.initialized) return;
+
+    const delta = this.clock.getDelta();
+
+    this.cameraManager.update(delta);
+
+    if (this.aircraft?.update) {
+      this.aircraft.update(delta);
+    }
+
+    this.renderer.render(
+      this.sceneManager.scene,
+      this.cameraManager.camera
+    );
+  }
+}
+
+const simulator = new FlightSimulator();
+
+simulator.init();
