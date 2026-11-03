@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#08111f">
+
+    <title>IEUM Flight Simulator</title>
+
+    <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+    <div id="game"></div>
+
+    <div id="hud">
+        <div class="brand">
+            <div class="logo">IEUM <span>FLIGHT</span></div>
+            <div class="subtitle">AIRCRAFT DEVELOPMENT PROJECT</div>
+        </div>
+
+        <div class="aircraft-info">
+            <div class="aircraft-name">BOEING 747-400</div>
+            <div class="aircraft-description">
+                JUMBO JET · WIDE BODY · FOUR ENGINE
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="stat">
+                <span class="label">AIRCRAFT</span>
+                <span class="value">B747-400</span>
+            </div>
+
+            <div class="stat">
+                <span class="label">WINGSPAN</span>
+                <span class="value">64.4 M</span>
+            </div>
+
+            <div class="stat">
+                <span class="label">LENGTH</span>
+                <span class="value">70.7 M</span>
+            </div>
+
+            <div class="stat">
+                <span class="label">MODE</span>
+                <span class="value green">3D SHOWCASE</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            MOUSE DRAG — ROTATE<br>
+            SCROLL — ZOOM<br>
+            RIGHT CLICK — PAN
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="loading-logo">IEUM FLIGHT</div>
+            <div class="loading-text">INITIALIZING AIRCRAFT...</div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
