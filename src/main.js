@@ -26,7 +26,7 @@ class FlightSimulator {
 
     async init() {
         try {
-            console.log("[IEUM FLIGHT] Initializing...");
+            console.log("[IEUM FLIGHT] Starting...");
 
             this.validateElements();
 
@@ -38,7 +38,7 @@ class FlightSimulator {
 
             // Camera
             this.cameraManager = new CameraManager(
-                this.renderer.instance.domElement
+                this.renderer.instance
             );
 
             // Aircraft
@@ -48,21 +48,28 @@ class FlightSimulator {
 
             this.aircraft.position.set(0, 0, 0);
 
-            // Camera position
+            // Camera initial position
             this.cameraManager.camera.position.set(
                 95,
                 45,
                 -105
             );
 
-            this.cameraManager.camera.lookAt(0, 0, 0);
+            this.cameraManager.controls.target.set(
+                0,
+                0,
+                0
+            );
 
-            // Resize
+            this.cameraManager.controls.update();
+
+            // Initial resize
             this.handleResize();
 
+            // Window resize
             window.addEventListener(
                 "resize",
-                () => this.handleResize()
+                this.handleResize
             );
 
             // Ready
@@ -70,13 +77,13 @@ class FlightSimulator {
 
             this.hideLoading();
 
-            console.log("[IEUM FLIGHT] Aircraft initialized.");
+            console.log("[IEUM FLIGHT] Ready.");
 
             this.animate();
 
         } catch (error) {
             console.error(
-                "[IEUM FLIGHT] Initialization failed:",
+                "[IEUM FLIGHT] Initialization error:",
                 error
             );
 
@@ -87,23 +94,25 @@ class FlightSimulator {
     validateElements() {
         if (!this.container) {
             throw new Error(
-                'HTML element "#game" was not found.'
+                'Cannot find "#game" element.'
             );
         }
 
         if (!this.loading) {
             throw new Error(
-                'HTML element "#loading" was not found.'
+                'Cannot find "#loading" element.'
             );
         }
     }
 
-    handleResize() {
-        if (!this.renderer || !this.cameraManager) return;
+    handleResize = () => {
+        if (!this.renderer || !this.cameraManager) {
+            return;
+        }
 
         this.renderer.resize();
         this.cameraManager.resize();
-    }
+    };
 
     hideLoading() {
         if (!this.loading) return;
@@ -122,7 +131,9 @@ class FlightSimulator {
         this.loading.style.opacity = "1";
 
         this.loading.innerHTML = `
-            <div class="loading-logo">IEUM FLIGHT</div>
+            <div class="loading-logo">
+                IEUM FLIGHT
+            </div>
 
             <div class="loading-text" style="color:#ff6464">
                 INITIALIZATION FAILED
@@ -166,22 +177,20 @@ class FlightSimulator {
         );
     }
 
-    animate() {
+    animate = () => {
         this.animationFrame = requestAnimationFrame(
-            () => this.animate()
+            this.animate
         );
 
         if (!this.initialized) return;
 
         const delta = this.clock.getDelta();
 
-        // Camera controls
-        if (this.cameraManager.update) {
-            this.cameraManager.update(delta);
-        }
+        // Camera
+        this.cameraManager.update(delta);
 
-        // Aircraft animation
-        if (this.aircraft.update) {
+        // Aircraft
+        if (typeof this.aircraft.update === "function") {
             this.aircraft.update(delta);
         }
 
@@ -190,20 +199,25 @@ class FlightSimulator {
             this.sceneManager.scene,
             this.cameraManager.camera
         );
-    }
+    };
 
     dispose() {
         this.initialized = false;
 
-        if (this.animationFrame) {
+        if (this.animationFrame !== null) {
             cancelAnimationFrame(this.animationFrame);
         }
 
+        window.removeEventListener(
+            "resize",
+            this.handleResize
+        );
+
+        this.cameraManager?.controls?.dispose();
         this.renderer?.dispose();
     }
 }
 
-// Start
 const simulator = new FlightSimulator();
 
 simulator.init();
