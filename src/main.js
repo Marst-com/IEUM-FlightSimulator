@@ -10,121 +10,206 @@ import Boeing747_400 from "./airplane/Boeing747-400/index.js";
 import "./styles/main.css";
 
 class FlightSimulator {
-  constructor() {
-    this.renderer = null;
-    this.sceneManager = null;
-    this.cameraManager = null;
-    this.aircraft = null;
+    constructor() {
+        this.renderer = null;
+        this.sceneManager = null;
+        this.cameraManager = null;
+        this.aircraft = null;
 
-    this.canvas = document.querySelector("#flight-canvas");
-    this.loading = document.querySelector("#loading-screen");
+        this.container = document.querySelector("#game");
+        this.loading = document.querySelector("#loading");
 
-    this.clock = new THREE.Clock();
-    this.initialized = false;
-  }
+        this.clock = new THREE.Clock();
+        this.initialized = false;
+        this.animationFrame = null;
+    }
 
-  async init() {
-    try {
-      console.log("[IEUM] Initializing renderer...");
+    async init() {
+        try {
+            console.log("[IEUM FLIGHT] Initializing...");
 
-      this.renderer = new Renderer(this.canvas);
+            this.validateElements();
 
-      console.log("[IEUM] Initializing scene...");
+            // Renderer
+            this.renderer = new Renderer(this.container);
 
-      this.sceneManager = new SceneManager();
+            // Scene
+            this.sceneManager = new SceneManager();
 
-      console.log("[IEUM] Initializing camera...");
+            // Camera
+            this.cameraManager = new CameraManager(
+                this.renderer.instance.domElement
+            );
 
-      this.cameraManager = new CameraManager(
-        this.renderer.renderer.domElement
-      );
+            // Aircraft
+            this.aircraft = new Boeing747_400();
 
-      console.log("[IEUM] Creating aircraft...");
+            this.sceneManager.scene.add(this.aircraft);
 
-      this.aircraft = new Boeing747_400();
+            this.aircraft.position.set(0, 0, 0);
 
-      this.sceneManager.scene.add(this.aircraft);
+            // Camera position
+            this.cameraManager.camera.position.set(
+                95,
+                45,
+                -105
+            );
 
-      console.log("[IEUM] Aircraft created:", this.aircraft);
+            this.cameraManager.camera.lookAt(0, 0, 0);
 
-      this.aircraft.position.set(0, 0, 0);
+            // Resize
+            this.handleResize();
 
-      this.cameraManager.camera.position.set(95, 45, -105);
-      this.cameraManager.camera.lookAt(0, 0, 0);
+            window.addEventListener(
+                "resize",
+                () => this.handleResize()
+            );
 
-      this.renderer.resize();
-      this.cameraManager.resize();
+            // Ready
+            this.initialized = true;
 
-      window.addEventListener("resize", () => {
+            this.hideLoading();
+
+            console.log("[IEUM FLIGHT] Aircraft initialized.");
+
+            this.animate();
+
+        } catch (error) {
+            console.error(
+                "[IEUM FLIGHT] Initialization failed:",
+                error
+            );
+
+            this.showError(error);
+        }
+    }
+
+    validateElements() {
+        if (!this.container) {
+            throw new Error(
+                'HTML element "#game" was not found.'
+            );
+        }
+
+        if (!this.loading) {
+            throw new Error(
+                'HTML element "#loading" was not found.'
+            );
+        }
+    }
+
+    handleResize() {
+        if (!this.renderer || !this.cameraManager) return;
+
         this.renderer.resize();
         this.cameraManager.resize();
-      });
-
-      this.initialized = true;
-
-      this.hideLoading();
-
-      console.log("[IEUM] Flight Simulator Ready");
-
-      this.animate();
-
-    } catch (error) {
-      console.error("[IEUM] Initialization failed:", error);
-      this.showError(error);
-    }
-  }
-
-  hideLoading() {
-    if (!this.loading) return;
-
-    this.loading.style.opacity = "0";
-
-    setTimeout(() => {
-      this.loading.style.display = "none";
-    }, 500);
-  }
-
-  showError(error) {
-    if (!this.loading) return;
-
-    this.loading.innerHTML = `
-      <div style="
-        color: white;
-        font-family: monospace;
-        text-align: center;
-        padding: 30px;
-      ">
-        <h2>INITIALIZATION FAILED</h2>
-        <p style="color:#ff7777">
-          ${String(error.message || error)}
-        </p>
-        <p style="color:#999">
-          Check browser console for details.
-        </p>
-      </div>
-    `;
-  }
-
-  animate() {
-    requestAnimationFrame(() => this.animate());
-
-    if (!this.initialized) return;
-
-    const delta = this.clock.getDelta();
-
-    this.cameraManager.update(delta);
-
-    if (this.aircraft?.update) {
-      this.aircraft.update(delta);
     }
 
-    this.renderer.render(
-      this.sceneManager.scene,
-      this.cameraManager.camera
-    );
-  }
+    hideLoading() {
+        if (!this.loading) return;
+
+        this.loading.style.opacity = "0";
+
+        setTimeout(() => {
+            this.loading.style.display = "none";
+        }, 500);
+    }
+
+    showError(error) {
+        if (!this.loading) return;
+
+        this.loading.style.display = "flex";
+        this.loading.style.opacity = "1";
+
+        this.loading.innerHTML = `
+            <div class="loading-logo">IEUM FLIGHT</div>
+
+            <div class="loading-text" style="color:#ff6464">
+                INITIALIZATION FAILED
+            </div>
+
+            <div style="
+                margin-top:15px;
+                max-width:500px;
+                padding:15px;
+                color:#ffaaaa;
+                font-size:12px;
+                text-align:center;
+                word-break:break-word;
+            ">
+                ${this.escapeHTML(error.message)}
+            </div>
+
+            <button onclick="location.reload()" style="
+                margin-top:20px;
+                padding:10px 20px;
+                border:1px solid #ffffff44;
+                background:#ffffff12;
+                color:white;
+                cursor:pointer;
+            ">
+                RETRY
+            </button>
+        `;
+    }
+
+    escapeHTML(value) {
+        return String(value).replace(
+            /[&<>"']/g,
+            character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[character]
+        );
+    }
+
+    animate() {
+        this.animationFrame = requestAnimationFrame(
+            () => this.animate()
+        );
+
+        if (!this.initialized) return;
+
+        const delta = this.clock.getDelta();
+
+        // Camera controls
+        if (this.cameraManager.update) {
+            this.cameraManager.update(delta);
+        }
+
+        // Aircraft animation
+        if (this.aircraft.update) {
+            this.aircraft.update(delta);
+        }
+
+        // Render
+        this.renderer.render(
+            this.sceneManager.scene,
+            this.cameraManager.camera
+        );
+    }
+
+    dispose() {
+        this.initialized = false;
+
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+        }
+
+        this.renderer?.dispose();
+    }
 }
 
+// Start
 const simulator = new FlightSimulator();
 
 simulator.init();
+
+window.addEventListener("beforeunload", () => {
+    simulator.dispose();
+});
+
+window.IEUMFlight = simulator;
