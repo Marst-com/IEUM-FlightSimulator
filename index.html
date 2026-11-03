@@ -1,27 +1,38 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta name="theme-color" content="#08111f">
 
     <title>IEUM Flight Simulator</title>
 
     <link rel="stylesheet" href="/src/styles/main.css">
 </head>
-<body>
-    <div id="game"></div>
 
+<body>
+    <!-- Three.js 렌더링 영역 -->
+    <div id="game">
+        <canvas id="flight-canvas"></canvas>
+    </div>
+
+    <!-- HUD -->
     <div id="hud">
+
         <div class="brand">
-            <div class="logo">IEUM <span>FLIGHT</span></div>
-            <div class="subtitle">AIRCRAFT DEVELOPMENT PROJECT</div>
+            <div class="logo">
+                IEUM <span>FLIGHT</span>
+            </div>
+            <div class="subtitle">
+                AIRCRAFT DEVELOPMENT PROJECT
+            </div>
         </div>
 
         <div class="aircraft-info">
-            <div class="aircraft-name">BOEING 747-400</div>
+            <div class="aircraft-name">
+                BOEING 747-400
+            </div>
+
             <div class="aircraft-description">
                 JUMBO JET · WIDE BODY · FOUR ENGINE
             </div>
@@ -55,12 +66,17 @@
             RIGHT CLICK — PAN
         </div>
 
-        <div class="loading" id="loading">
+        <!-- Loading -->
+        <div class="loading" id="loading-screen">
             <div class="loading-logo">IEUM FLIGHT</div>
-            <div class="loading-text">INITIALIZING AIRCRAFT...</div>
+            <div class="loading-text">
+                INITIALIZING AIRCRAFT...
+            </div>
         </div>
+
     </div>
 
+    <!-- Main -->
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
